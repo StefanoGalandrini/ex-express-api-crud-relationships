@@ -8,12 +8,33 @@ datasource db {
 }
 
 model Post {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(100)
+  slug       String   @unique(map: "Post_slug_key") @db.VarChar(150)
+  image      String?  @db.Text
+  content    String   @db.Text
+  published  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  categoryId Int      @default(1)
+  category   Category @relation(fields: [categoryId], references: [id])
+  tags       Tag[]
+}
+
+model Category {
   id        Int      @id @default(autoincrement())
-  title     String   @db.VarChar(100)
-  slug      String   @unique(map: "Post_slug_key") @db.VarChar(150)
-  image     String?  @db.Text
-  content   String   @db.Text
-  published Boolean  @default(false)
+  name      String   @unique(map: "Category_name_key") @db.VarChar(100)
+  slug      String   @unique(map: "Category_slug_key") @db.VarChar(150)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  posts     Post[]
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique(map: "Tag_name_key") @db.VarChar(100)
+  slug      String   @unique(map: "Tag_slug_key") @db.VarChar(150)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  posts     Post[]
 }
