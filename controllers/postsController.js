@@ -43,7 +43,13 @@ async function index(req, res, next)
 			};
 		}
 
-		const posts = await prisma.post.findMany(queryOptions);
+		const posts = await prisma.post.findMany({
+			...queryOptions,
+			include: {
+				category: true,
+				tags: true,
+			},
+		});
 		res.json(posts);
 	} catch (error)
 	{
@@ -73,6 +79,14 @@ async function create(req, res, next)
 				image,
 				content,
 				published,
+				categoryId: req.body.categoryId,
+				tags: {
+					connect: req.body.tags,
+				},
+			},
+			include: {
+				category: true,
+				tags: true,
 			}
 		});
 
@@ -97,6 +111,10 @@ async function show(req, res, next)
 		const { slug } = req.params;
 		const post = await prisma.post.findUnique({
 			where: { slug: slug },
+			include: {
+				category: true,
+				tags: true,
+			},
 		});
 
 		if (post)
@@ -124,15 +142,35 @@ async function update(req, res, next)
 	try
 	{
 		const { slug } = req.params;
+		let updateData = req.body;
 
 		if (req.body.title)
 		{
-			req.body.slug = await generateSlug(req.body.title);
+			updateData.slug = await generateSlug(req.body.title);
+		}
+
+		// update category
+		if (req.body.categoryId)
+		{
+			updateData.categoryId = req.body.categoryId;
+		}
+
+		// update tags
+		if (req.body.tags)
+		{
+			updateData.tags = {
+				set: [],
+				connect: req.body.tags,
+			};
 		}
 
 		const updatedPost = await prisma.post.update({
 			where: { slug: slug },
-			data: req.body,
+			data: updateData,
+			include: {
+				category: true,
+				tags: true,
+			},
 		});
 
 		res.json(updatedPost);
