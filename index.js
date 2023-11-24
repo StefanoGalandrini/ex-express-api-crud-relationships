@@ -10,6 +10,8 @@ app.use(express.json());
 
 // import routers
 app.use("/posts", require("./routers/postsRouter"));
+app.use("/categories", require("./routers/categoriesRouter"));
+app.use("/tags", require("./routers/tagsRouter"));
 
 // import middleware
 app.use(notFound);
